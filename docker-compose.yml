@@ -242,6 +242,7 @@ services:
       - TENANT_MANAGER_URL=http://tenant-manager:3001
       - SALLA_CLIENT_ID=${SALLA_CLIENT_ID}
       - SALLA_CLIENT_SECRET=${SALLA_CLIENT_SECRET}
+      - SALLA_REDIRECT_URI=${SALLA_REDIRECT_URI:-https://api.wosool.ai/salla/callback}
     depends_on:
       global-db:
         condition: service_healthy

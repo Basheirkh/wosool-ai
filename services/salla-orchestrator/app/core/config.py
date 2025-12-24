@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     # Salla API Configuration
     SALLA_CLIENT_ID: str
     SALLA_CLIENT_SECRET: str
-    SALLA_REDIRECT_URI: str
+    SALLA_REDIRECT_URI: Optional[str] = "https://api.wosool.ai/salla/callback"
     
     # Database
     POSTGRES_URL: Optional[str] = None
