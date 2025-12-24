@@ -103,8 +103,9 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
         curl -f http://localhost:3000/ || \
         exit 1
 
-# Override entrypoint - use standard /entrypoint.sh path with bash wrapper
-ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
+# Override entrypoint - use /bin/sh (more compatible) or ensure bash is installed
+# Try with /bin/sh first, which is available in all Linux containers
+ENTRYPOINT ["/bin/sh", "/entrypoint.sh"]
 
 # Default command (can be overridden in docker-compose.yml)
 CMD []

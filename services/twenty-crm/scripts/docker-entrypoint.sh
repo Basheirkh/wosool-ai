@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 # Production-ready entrypoint for Twenty CRM with proper error handling
 # Follows industry best practices for Docker container initialization
 
-set -euo pipefail
+set -eu
 
 # ============================================================================
 # CONFIGURATION
