@@ -24,14 +24,14 @@ JWT_SECRET=${JWT_SEC}
 SUPER_ADMIN_KEY=${ADMIN_KEY}
 SALLA_WEBHOOK_SECRET=${WEBHOOK_SEC}
 
-# Salla Integration (Update with your credentials)
-SALLA_CLIENT_ID=your_salla_client_id
-SALLA_CLIENT_SECRET=your_salla_client_secret
+# Salla Integration
+SALLA_CLIENT_ID=47ef1a57-b66c-4c73-9a79-a6bd8ee60a43
+SALLA_CLIENT_SECRET=2bb37d799e6fd88ebb14a77708e9263c7769e860c9d10bfc738a6835f3ead153
 
-# Clerk Integration (Update with your credentials)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
-CLERK_SECRET_KEY=your_clerk_secret_key
-CLERK_WEBHOOK_SECRET=your_clerk_webhook_secret
+# Clerk Integration
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_ZW1lcmdpbmctc2tpbmstNzUuY2xlcmsuYWNjb3VudHMuZGV2JA
+CLERK_SECRET_KEY=sk_test_kIRXGCc7WeA4MMaAkh6L3d17NbGRB6QkRodqsYHqrm
+CLERK_WEBHOOK_SECRET=
 
 # Grafana
 GRAFANA_ADMIN_PASSWORD=admin
@@ -51,7 +51,7 @@ EOF
 
 echo "✅ .env file created successfully!"
 echo ""
-echo "⚠️  IMPORTANT: Update Salla and Clerk credentials in .env if you have them"
+echo "⚠️  NOTE: CLERK_WEBHOOK_SECRET is empty - add it from Clerk dashboard if needed"
 echo ""
 echo "Next steps:"
 echo "  docker-compose build --no-cache"
