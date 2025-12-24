@@ -173,14 +173,8 @@ mark_migration_complete() {
 load_environment_variables() {
   log_info "Loading environment variables from .env files..."
   
-  # Try multiple .env file locations
-  local env_locations=(
-    "${MONOREPO_ROOT}/.env"
-    "/opt/twenty-crm-production/.env"
-    "../../.env"
-  )
-  
-  for env_file in "${env_locations[@]}"; do
+  # Try multiple .env file locations (sh-compatible, no arrays)
+  for env_file in "${MONOREPO_ROOT}/.env" "/opt/twenty-crm-production/.env" "../../.env"; do
     if [ -f "$env_file" ]; then
       log_info "Found .env file at: $env_file"
       
@@ -281,15 +275,10 @@ wait_for_server_ready() {
   log_section "Waiting for Twenty CRM Server to be Ready"
   
   local wait_count=0
-  local endpoints=(
-    "http://localhost:3000/health"
-    "http://localhost:3000/"
-    "http://localhost:3000/metadata"
-  )
   
   while [ $wait_count -lt $MAX_STARTUP_WAIT ]; do
-    # Try each endpoint
-    for endpoint in "${endpoints[@]}"; do
+    # Try each endpoint (sh-compatible, no arrays)
+    for endpoint in "http://localhost:3000/health" "http://localhost:3000/" "http://localhost:3000/metadata"; do
       if curl -f -s "$endpoint" > /dev/null 2>&1; then
         log_success "Server is ready at $endpoint"
         return 0
