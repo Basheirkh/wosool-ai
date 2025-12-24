@@ -73,14 +73,12 @@ RUN mkdir -p /app/.migration && \
 # ENTRYPOINT SETUP
 # ============================================================================
 
-# Copy custom entrypoint script with explicit permissions to multiple locations
-# This ensures the script is available regardless of how Docker resolves paths
-COPY --chmod=755 scripts/docker-entrypoint.sh /docker-entrypoint-custom.sh
-COPY --chmod=755 scripts/docker-entrypoint.sh /app/docker-entrypoint-custom.sh
+# Copy custom entrypoint script with explicit permissions
+# Using standard /entrypoint.sh path for maximum compatibility
+COPY --chmod=755 scripts/docker-entrypoint.sh /entrypoint.sh
 
-# Verify entrypoint is executable in both locations
-RUN test -x /docker-entrypoint-custom.sh && \
-    test -x /app/docker-entrypoint-custom.sh || \
+# Verify entrypoint is executable
+RUN test -x /entrypoint.sh || \
     (echo "ERROR: Entrypoint script is not executable" && exit 1)
 
 # Set working directory back to monorepo root
@@ -105,8 +103,8 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
         curl -f http://localhost:3000/ || \
         exit 1
 
-# Override entrypoint - use /app path with bash wrapper for better compatibility
-ENTRYPOINT ["/bin/bash", "/app/docker-entrypoint-custom.sh"]
+# Override entrypoint - use standard /entrypoint.sh path with bash wrapper
+ENTRYPOINT ["/bin/bash", "/entrypoint.sh"]
 
 # Default command (can be overridden in docker-compose.yml)
 CMD []
