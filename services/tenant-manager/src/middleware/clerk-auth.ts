@@ -30,10 +30,11 @@ export function clerkAuthMiddleware(globalDb: Pool) {
         : req.cookies?.__session || req.headers['x-clerk-token'];
 
       if (!token) {
-        return res.status(401).json({
+        res.status(401).json({
           error: 'Unauthorized',
           message: 'No authentication token provided',
         });
+        return;
       }
 
       // For now, we'll extract tenant from token or header

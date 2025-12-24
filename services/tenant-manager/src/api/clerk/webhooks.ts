@@ -28,7 +28,8 @@ export function createClerkWebhookRouter(
     const svix_signature = headers['svix-signature'] as string;
 
     if (!svix_id || !svix_timestamp || !svix_signature) {
-      return res.status(400).json({ error: 'Missing svix headers' });
+      res.status(400).json({ error: 'Missing svix headers' });
+      return;
     }
 
     const wh = new Webhook(webhookSecret);
@@ -42,7 +43,8 @@ export function createClerkWebhookRouter(
       });
     } catch (err) {
       console.error('Clerk webhook verification failed:', err);
-      return res.status(400).json({ error: 'Invalid signature' });
+      res.status(400).json({ error: 'Invalid signature' });
+      return;
     }
 
     const { type, data } = evt;
@@ -90,7 +92,8 @@ export function createClerkWebhookRouter(
         
         const email = data.email_addresses?.[0]?.email_address;
         if (!email) {
-          return res.json({ success: true, message: 'No email found' });
+          res.json({ success: true, message: 'No email found' });
+          return;
         }
 
         // Check if user already exists
