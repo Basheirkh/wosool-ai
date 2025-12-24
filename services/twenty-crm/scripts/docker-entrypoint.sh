@@ -136,6 +136,19 @@ start_application() {
   }
   
   log_info "Working directory: $(pwd)"
+  
+  # Check if node_modules exists, if not install dependencies
+  if [ ! -d "node_modules" ] || [ ! -f "node_modules/.bin/nx" ]; then
+    log_info "Dependencies not found, installing..."
+    yarn install --frozen-lockfile --production=false || {
+      log_error "Failed to install dependencies"
+      exit 1
+    }
+    log_success "Dependencies installed"
+  else
+    log_info "Dependencies already installed"
+  fi
+  
   log_info "Starting application server..."
   
   # Start the application with proper logging
