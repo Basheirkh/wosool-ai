@@ -140,7 +140,8 @@ start_application() {
   # Check if node_modules exists, if not install dependencies
   if [ ! -d "node_modules" ] || [ ! -f "node_modules/.bin/nx" ]; then
     log_info "Dependencies not found, installing..."
-    yarn install --frozen-lockfile --production=false || {
+    # Yarn v2+ doesn't support --production=false, just use yarn install
+    yarn install --frozen-lockfile || {
       log_error "Failed to install dependencies"
       exit 1
     }
