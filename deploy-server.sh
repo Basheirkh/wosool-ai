@@ -42,7 +42,7 @@ else
 fi
 
 # Navigate to project directory
-cd /root/twenty-crm-enterprise-v1 || { echo -e "${RED}Error: Project directory not found${NC}"; exit 1; }
+cd /root/wosool-ai || { echo -e "${RED}Error: Project directory not found${NC}"; exit 1; }
 
 # Create .env file if it doesn't exist
 if [ ! -f .env ]; then
