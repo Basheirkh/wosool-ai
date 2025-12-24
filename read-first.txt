@@ -1,0 +1,119 @@
+Below is a **clean, professional, industry-standard AI prompt** you can use to get a **complete, production-ready fix** for this issue.
+It is written so another AI (or engineer) can fully diagnose, correct, and harden the setup end-to-end.
+
+---
+
+## ✅ COPY-PASTE PROMPT
+
+> You are a **senior DevOps / Platform Engineer** with deep experience in **Docker, Node.js monorepos, Nx, Yarn, Nginx reverse proxies, and production container hardening**.
+>
+> ### Context
+>
+> We are deploying **Twenty CRM**, which is a **Yarn + Nx monorepo**.
+>
+> The system currently returns **502 Bad Gateway** from Nginx because the **Twenty CRM backend is not listening on port 3000**.
+>
+> ### What Works
+>
+> * Nginx configuration is correct
+> * Network connectivity between containers is correct
+> * Database exists and is reachable
+> * Database migrations run successfully
+> * Containers stay running (no crash loop)
+>
+> ### What Fails
+>
+> * Backend service never binds to port **3000**
+> * `yarn start` appears to fail silently
+> * Nx commands require **monorepo root context**
+>
+> ### Root Cause (Confirmed)
+>
+> * The Docker entrypoint script changes directory to:
+>
+>   ```
+>   /app/packages/twenty-server
+>   ```
+>
+>   to run migrations
+> * Then attempts:
+>
+>   ```
+>   cd /app && yarn start
+>   ```
+> * Because of how the shell process, logging, and Nx workspace resolution work, the service starts incorrectly or never binds to port 3000
+> * `yarn start` **must be executed from `/app`**, the monorepo root, with correct environment variables
+>
+> ### Diagnostics Already Run
+>
+> ```
+> docker exec ent-twenty-crm cat /tmp/twenty.log
+> docker exec ent-twenty-crm ss -tlnp | grep 3000
+> docker exec -it ent-twenty-crm sh
+> cd /app
+> yarn start
+> ```
+>
+> ### Objective
+>
+> **Fully fix the system to production standards**, not just make it “work once”.
+>
+> ### Requirements
+>
+> You must:
+>
+> 1. **Identify every failure point** in:
+>
+>    * Dockerfile
+>    * Entrypoint script
+>    * Working directory handling
+>    * Nx execution context
+>    * Logging & error visibility
+> 2. **Rewrite the entrypoint script** so that:
+>
+>    * Migrations run safely
+>    * The app always starts from `/app`
+>    * Failures are fatal (no silent failure)
+>    * Logs are visible to Docker stdout/stderr
+> 3. **Ensure the service binds to port 3000**
+>
+>    * Explicitly verify listening behavior
+>    * Include health-check logic if appropriate
+> 4. **Provide final, corrected versions of**:
+>
+>    * `Dockerfile` (if changes are needed)
+>    * `entrypoint.sh`
+>    * `docker-compose.yml` (if changes are needed)
+> 5. Apply **industry best practices**, including:
+>
+>    * `set -euo pipefail`
+>    * Explicit working directories
+>    * Non-silent command execution
+>    * Proper PID 1 behavior
+>    * Deterministic startup order
+> 6. Include:
+>
+>    * Clear explanation of **why the issue occurred**
+>    * How your fix prevents it permanently
+>    * How to verify the fix with commands
+>
+> ### Output Format
+>
+> * Root cause explanation
+> * Corrected files (fully written, not snippets)
+> * Verification checklist
+> * Optional production hardening recommendations
+>
+> Do **not** give partial fixes, guesses, or “try this”.
+> This must be a **fully working, production-ready solution**.
+
+---
+
+If you want, I can also:
+
+* 🔧 **Write the fixed entrypoint + Dockerfile directly**
+* 📦 **Validate against the actual Twenty CRM repo structure**
+* 🚀 **Harden it for Kubernetes or ECS**
+* 🧪 **Add proper healthchecks and readiness probes**
+
+Just tell me.
