@@ -21,7 +21,7 @@ export interface ClerkAuthRequest extends Request {
  * Note: This is a simplified version. In production, use @clerk/clerk-sdk-node
  */
 export function clerkAuthMiddleware(globalDb: Pool) {
-  return async (req: ClerkAuthRequest, res: Response, next: NextFunction) => {
+  return async (req: ClerkAuthRequest, res: Response, next: NextFunction): Promise<void> => {
     try {
       // Extract token from Authorization header or cookie
       const authHeader = req.headers.authorization;

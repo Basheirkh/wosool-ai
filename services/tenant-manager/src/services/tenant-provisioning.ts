@@ -454,9 +454,10 @@ class ImprovedTenantProvisioningService {
       await this.runMigrations(databaseUrl);
 
       // 8. Initialize workspace (only if email/password provided, otherwise Clerk will handle)
+      let passwordHash: string | null = null;
       if (request.adminEmail && request.adminPassword) {
         const bcrypt = await import('bcrypt');
-        const passwordHash = await bcrypt.hash(request.adminPassword, 10);
+        passwordHash = await bcrypt.hash(request.adminPassword, 10);
         
         const tenantDb = new Pool({ connectionString: databaseUrl });
         

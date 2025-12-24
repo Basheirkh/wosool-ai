@@ -18,7 +18,7 @@ export function createClerkWebhookRouter(
   const router = Router();
   const webhookSecret = process.env.CLERK_WEBHOOK_SECRET || '';
 
-  router.post('/webhooks', async (req: Request, res: Response) => {
+  router.post('/webhooks', async (req: Request, res: Response): Promise<void> => {
     const payload = JSON.stringify(req.body);
     const headers = req.headers;
 
