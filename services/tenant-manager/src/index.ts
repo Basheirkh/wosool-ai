@@ -67,6 +67,9 @@ const tenantResolver = new TenantResolverService(
   process.env.JWT_SECRET || 'change-me-in-production'
 );
 
+// Trust proxy - required when running behind Nginx/reverse proxy
+app.set('trust proxy', true);
+
 // Middleware
 app.use(helmet());
 app.use(cors({
