@@ -98,9 +98,22 @@ if grep -q "environment:" docker-compose.yml | head -2; then
     sed -i '11d' docker-compose.yml
 fi
 
-# Stop any existing containers
+# Stop and remove any existing containers
 echo "Stopping existing containers..."
 docker-compose down 2>/dev/null || docker compose down 2>/dev/null || true
+
+# Forcefully remove any orphaned containers with our naming pattern
+echo "Removing orphaned containers..."
+docker ps -a --filter "name=ent-" --format "{{.Names}}" | xargs -r docker rm -f 2>/dev/null || true
+
+# Remove any containers with conflicting names
+CONTAINERS_TO_REMOVE="ent-tenant-db ent-global-db ent-tenant-manager ent-twenty-crm ent-nginx ent-redis ent-salla-orchestrator ent-prometheus ent-grafana ent-pgadmin ent-redis-commander"
+for container in $CONTAINERS_TO_REMOVE; do
+    if docker ps -a --format "{{.Names}}" | grep -q "^${container}$"; then
+        echo "Removing old container: $container"
+        docker rm -f "$container" 2>/dev/null || true
+    fi
+done
 
 # Initialize source database (ONE TIME ONLY)
 echo ""
