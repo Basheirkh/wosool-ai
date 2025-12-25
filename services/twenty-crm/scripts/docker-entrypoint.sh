@@ -43,6 +43,57 @@ log_section() {
 # DATABASE MIGRATION FUNCTIONS
 # ============================================================================
 
+ensure_database_exists() {
+  log_info "Ensuring database exists..."
+  
+  # Extract database name from PG_DATABASE_URL
+  # Format: postgresql://user:pass@host:port/dbname
+  local db_url="${PG_DATABASE_URL}"
+  local db_name
+  local db_host
+  local db_user
+  local db_pass
+  
+  # Parse database URL (simple parsing for standard format)
+  if echo "$db_url" | grep -q "@"; then
+    db_name=$(echo "$db_url" | sed -n 's/.*\/\([^?]*\).*/\1/p')
+    db_host=$(echo "$db_url" | sed -n 's/.*@\([^:]*\):.*/\1/p')
+    db_user=$(echo "$db_url" | sed -n 's/postgresql:\/\/\([^:]*\):.*/\1/p')
+    db_pass=$(echo "$db_url" | sed -n 's/postgresql:\/\/[^:]*:\([^@]*\)@.*/\1/p')
+  else
+    log_error "Invalid PG_DATABASE_URL format"
+    return 1
+  fi
+  
+  if [ -z "$db_name" ]; then
+    log_error "Could not parse database name from PG_DATABASE_URL"
+    return 1
+  fi
+  
+  log_info "Target database: $db_name on host: $db_host"
+  
+  # Create database URL for postgres database (to create the target database)
+  local postgres_url
+  postgres_url=$(echo "$db_url" | sed "s|/${db_name}|/postgres|")
+  
+  # Check if database exists, create if not
+  local db_exists
+  db_exists=$(PGPASSWORD="$db_pass" psql -h "$db_host" -U "$db_user" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname = '$db_name'" 2>/dev/null || echo "")
+  
+  if [ -z "$db_exists" ] || [ "$db_exists" != "1" ]; then
+    log_info "Database '$db_name' does not exist. Creating..."
+    PGPASSWORD="$db_pass" psql -h "$db_host" -U "$db_user" -d postgres -c "CREATE DATABASE \"$db_name\";" 2>&1 || {
+      log_error "Failed to create database '$db_name'"
+      return 1
+    }
+    log_success "Database '$db_name' created successfully"
+  else
+    log_info "Database '$db_name' already exists"
+  fi
+  
+  return 0
+}
+
 run_database_migrations() {
   log_section "Running Database Migrations"
   
@@ -55,6 +106,12 @@ run_database_migrations() {
   if [ "${DISABLE_DB_MIGRATIONS:-false}" = "true" ]; then
     log_info "Database migrations disabled via DISABLE_DB_MIGRATIONS flag"
     return 0
+  fi
+  
+  # Ensure database exists before attempting migrations
+  if ! ensure_database_exists; then
+    log_error "Failed to ensure database exists"
+    return 1
   fi
   
   log_info "Checking database schema status..."
