@@ -26,8 +26,7 @@ services:
     depends_on:
       - global-db
       - redis
-    ports:
-      - "3001:3001"
+    # No external ports - routed through nginx
     networks:
       - ent-network
     restart: unless-stopped
@@ -134,8 +133,7 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
       - '--storage.tsdb.retention.time=30d'
-    ports:
-      - "9092:9090"
+    # No external ports - routed through nginx
     networks:
       - ent-network
     restart: unless-stopped
@@ -295,8 +293,7 @@ services:
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
     volumes:
       - pgadmin-data:/var/lib/pgadmin
-    ports:
-      - "5050:80"
+    # No external ports - routed through nginx
     depends_on:
       - global-db
     networks:
@@ -309,8 +306,7 @@ services:
     container_name: ent-redis-commander
     environment:
       - REDIS_HOSTS=local:redis:6379
-    ports:
-      - "8081:8081"
+    # No external ports - routed through nginx
     depends_on:
       - redis
     networks:
