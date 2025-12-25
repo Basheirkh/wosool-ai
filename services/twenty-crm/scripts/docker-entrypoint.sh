@@ -49,40 +49,70 @@ ensure_database_exists() {
   # Extract database name from PG_DATABASE_URL
   # Format: postgresql://user:pass@host:port/dbname
   local db_url="${PG_DATABASE_URL}"
-  local db_name
-  local db_host
-  local db_user
-  local db_pass
   
-  # Parse database URL (simple parsing for standard format)
-  if echo "$db_url" | grep -q "@"; then
-    db_name=$(echo "$db_url" | sed -n 's/.*\/\([^?]*\).*/\1/p')
-    db_host=$(echo "$db_url" | sed -n 's/.*@\([^:]*\):.*/\1/p')
-    db_user=$(echo "$db_url" | sed -n 's/postgresql:\/\/\([^:]*\):.*/\1/p')
-    db_pass=$(echo "$db_url" | sed -n 's/postgresql:\/\/[^:]*:\([^@]*\)@.*/\1/p')
-  else
-    log_error "Invalid PG_DATABASE_URL format"
-    return 1
-  fi
+  # Use a more robust parsing approach
+  # Remove protocol and query params
+  local db_part
+  db_part=$(echo "$db_url" | sed 's|postgresql://||' | sed 's|?.*||')
+  
+  # Extract database name (everything after last /)
+  local db_name
+  db_name=$(echo "$db_part" | sed 's|.*/||')
+  
+  # Extract host:port (everything between @ and /)
+  local host_part
+  host_part=$(echo "$db_part" | sed 's|.*@||' | sed 's|/.*||')
+  local db_host
+  db_host=$(echo "$host_part" | cut -d: -f1)
+  local db_port
+  db_port=$(echo "$host_part" | cut -d: -f2)
+  db_port=${db_port:-5432}
+  
+  # Extract user:password (everything before @)
+  local auth_part
+  auth_part=$(echo "$db_part" | sed 's|@.*||')
+  local db_user
+  db_user=$(echo "$auth_part" | cut -d: -f1)
+  local db_pass
+  db_pass=$(echo "$auth_part" | cut -d: -f2-)
   
   if [ -z "$db_name" ]; then
     log_error "Could not parse database name from PG_DATABASE_URL"
     return 1
   fi
   
-  log_info "Target database: $db_name on host: $db_host"
+  if [ -z "$db_host" ] || [ -z "$db_user" ]; then
+    log_error "Could not parse host or user from PG_DATABASE_URL"
+    return 1
+  fi
   
-  # Create database URL for postgres database (to create the target database)
-  local postgres_url
-  postgres_url=$(echo "$db_url" | sed "s|/${db_name}|/postgres|")
+  log_info "Target database: $db_name on host: $db_host:$db_port"
+  
+  # Wait for database server to be ready
+  log_info "Waiting for database server to be ready..."
+  local retries=30
+  local count=0
+  while [ $count -lt $retries ]; do
+    if PGPASSWORD="$db_pass" psql -h "$db_host" -p "$db_port" -U "$db_user" -d postgres -c "SELECT 1;" >/dev/null 2>&1; then
+      log_success "Database server is ready"
+      break
+    fi
+    count=$((count + 1))
+    if [ $count -eq $retries ]; then
+      log_error "Database server not ready after $retries attempts"
+      return 1
+    fi
+    log_info "Waiting for database... ($count/$retries)"
+    sleep 2
+  done
   
   # Check if database exists, create if not
   local db_exists
-  db_exists=$(PGPASSWORD="$db_pass" psql -h "$db_host" -U "$db_user" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname = '$db_name'" 2>/dev/null || echo "")
+  db_exists=$(PGPASSWORD="$db_pass" psql -h "$db_host" -p "$db_port" -U "$db_user" -d postgres -tAc "SELECT 1 FROM pg_database WHERE datname = '$db_name'" 2>/dev/null || echo "")
   
   if [ -z "$db_exists" ] || [ "$db_exists" != "1" ]; then
     log_info "Database '$db_name' does not exist. Creating..."
-    PGPASSWORD="$db_pass" psql -h "$db_host" -U "$db_user" -d postgres -c "CREATE DATABASE \"$db_name\";" 2>&1 || {
+    PGPASSWORD="$db_pass" psql -h "$db_host" -p "$db_port" -U "$db_user" -d postgres -c "CREATE DATABASE \"$db_name\";" 2>&1 || {
       log_error "Failed to create database '$db_name'"
       return 1
     }
