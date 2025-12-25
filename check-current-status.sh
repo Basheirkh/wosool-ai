@@ -32,3 +32,4 @@ echo ""
 echo "=== Nginx Upstream Status ==="
 docker logs ent-nginx --tail 10 2>&1 | grep -E "(upstream|connect|502)" | tail -5
 
+
