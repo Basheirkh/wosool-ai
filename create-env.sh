@@ -7,6 +7,7 @@ echo "Creating .env file..."
 
 POSTGRES_PASS=$(openssl rand -base64 32 | tr -d "=+/" | cut -c1-25)
 JWT_SEC=$(openssl rand -base64 32)
+APP_SEC=$(openssl rand -base64 32)
 ADMIN_KEY=$(openssl rand -base64 32)
 WEBHOOK_SEC=$(openssl rand -base64 32)
 
@@ -21,6 +22,7 @@ CRM_BASE_URL=api.wosool.ai
 
 # Security Secrets
 JWT_SECRET=${JWT_SEC}
+APP_SECRET=${APP_SEC}
 SUPER_ADMIN_KEY=${ADMIN_KEY}
 SALLA_WEBHOOK_SECRET=${WEBHOOK_SEC}
 

@@ -189,6 +189,7 @@ services:
       
       # Authentication
       - JWT_SECRET=${JWT_SECRET}
+      - APP_SECRET=${APP_SECRET:-${JWT_SECRET}}
       
       # Migration Control (set to true to skip migrations)
       - DISABLE_DB_MIGRATIONS=${DISABLE_DB_MIGRATIONS:-false}
